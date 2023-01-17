@@ -1,3 +1,6 @@
 /.bsp/
 /target/
 /generation/
+/.bloop/
+/.metals/
+/project/

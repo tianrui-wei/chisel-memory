@@ -35,7 +35,7 @@ class SPMemUnmasked[T <: Data](depth: Int, data : T) extends SPMem[T](depth, dat
   override def write(addr: UInt, da: T, enable: Bool): Unit = {
     mem.io.writeAddr := addr
     mem.io.writeEnable := enable
-    mem.io.writeMask := Seq.fill(dataWidth/8)(false.B)
+    mem.io.writeMask := Seq.fill(dataWidth/8)(true.B)
     mem.io.writeData := da.asUInt
   }
 }

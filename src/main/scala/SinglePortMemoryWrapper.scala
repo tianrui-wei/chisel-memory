@@ -42,6 +42,7 @@ class SinglePortMemoryWrapper(depth: Int, width: Int = 32, masked: Boolean = fal
     bank.io.write_data := io.writeData
     bank.io.write_enable := io.writeEnable
     bank.io.read_enable := io.readEnable
+    bank.io.write_mask_u := io.writeMask.asUInt
     io.readData := bank.io.read_data
 }
 
@@ -56,7 +57,7 @@ class SRM(depth: Int, width: Int = 32) extends Module with AffectsChiselPrefix {
 class SPMTest(depth: Int, width: Int = 32) extends Module with AffectsChiselPrefix {
   val rand5: UInt = GaloisLFSR.maxPeriod(5)
   val rand32: UInt = GaloisLFSR.maxPeriod(32)
-  val spm = SPMem(32, UInt(8.W))
+  val spm = SPMem(depth, UInt(width.W))
   val ret = spm.read(rand5, rand5(0) === 1.U)
   spm.write(rand5, rand32, rand5(0) === 0.U)
 }

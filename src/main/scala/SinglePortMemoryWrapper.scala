@@ -33,12 +33,12 @@ class SinglePortMemoryWrapper(depth: Int, width: Int = 32, maskWidth: Int) exten
 
     bank.io.clk := clock
     bank.io.rst_n := !(reset.asBool)
-    bank.io.addr := Mux(io.writeEnable, io.writeAddr, io.readAddr)
+    bank.io.addr_i := Mux(io.writeEnable, io.writeAddr, io.readAddr)
     bank.io.write_data := io.writeData
     bank.io.write_enable := io.writeEnable
     bank.io.read_enable := io.readEnable
     bank.io.write_mask_u := io.writeMask.asUInt
-    io.readData := bank.io.read_data
+    io.readData := bank.io.read_data_o
 }
 
 // this is why blackboxing doesn't work. It will generate two different modules we need to fill

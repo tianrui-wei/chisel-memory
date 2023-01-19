@@ -43,13 +43,13 @@ class SinglePortMemory(
     val clk = Input(Clock())
     val rst_n = Input(Reset())
 
-    val addr = Input(UInt(addrWidth.W))
+    val addr_i = Input(UInt(addrWidth.W))
     val write_enable = Input(Bool())
     val read_enable = Input(
       Bool()
     ) // not actually used, just an assertion statement. We mux the addr in the previous stage
     val write_data = Input(UInt(dataWidth.W))
-    val read_data = Output(UInt(dataWidth.W))
+    val read_data_o = Output(UInt(dataWidth.W))
     val write_mask_u = Input(
       UInt(maskWidth.W)
     )

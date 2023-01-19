@@ -7,9 +7,9 @@ import chisel3.experimental.AffectsChiselPrefix
 import memory.SinglePortMemoryWrapper
 import memory.MemBase
 
-class SPMem[T <: Data](depth: Int, data : T, masked: Boolean, elWidth: Int = 8) extends MemBase[T](depth, data) {
+class SPMem[T <: Data](depth: Int, data : T, maskWidth: Int) extends MemBase[T](depth, data) {
 
-  val mem = Module(new SinglePortMemoryWrapper(depth, dataWidth, masked, elWidth))
+  val mem = Module(new SinglePortMemoryWrapper(depth, dataWidth, maskWidth))
 
   override def read(addr: UInt, enable: Bool): T = {
     mem.io.readAddr := addr
@@ -18,7 +18,7 @@ class SPMem[T <: Data](depth: Int, data : T, masked: Boolean, elWidth: Int = 8) 
   }
 }
 
-class SPMemMasked[T <: Data](depth: Int, data : T, masked: Boolean, elWidth: Int = 8) extends SPMem[T](depth, data, masked) {
+class SPMemMasked[T <: Data](depth: Int, data : T, maskWidth: Int = 1) extends SPMem[T](depth, data, maskWidth) {
 
   override def write(addr: UInt, da: T, writeMask: Vec[Bool], writeEnable: Bool): Unit = {
     mem.io.writeAddr := addr
@@ -29,12 +29,12 @@ class SPMemMasked[T <: Data](depth: Int, data : T, masked: Boolean, elWidth: Int
 }
 
 
-class SPMemUnmasked[T <: Data](depth: Int, data : T, masked: Boolean = false, elWidth: Int = 8) extends SPMem[T](depth, data, masked) {
+class SPMemUnmasked[T <: Data](depth: Int, data : T, maskWidth: Int = 1) extends SPMem[T](depth, data, maskWidth) {
 
   override def write(addr: UInt, da: T, enable: Bool): Unit = {
     mem.io.writeAddr := addr
     mem.io.writeEnable := enable
-    mem.io.writeMask := Seq.fill(dataWidth/8)(true.B)
+    mem.io.writeMask := Seq.fill(maskWidth)(true.B)
     mem.io.writeData := da.asUInt
   }
 }
@@ -42,8 +42,8 @@ class SPMemUnmasked[T <: Data](depth: Int, data : T, masked: Boolean = false, el
 object SPMem {
   def apply[T <: Data](depth: Int, data: T): SPMem[T] = {
     data match {
-      case v: Vec[_] =>new SPMemMasked(depth, data, true, v.length)
-      case _ => new SPMemUnmasked(depth, data, false, 8)
+      case v: Vec[_] =>new SPMemMasked(depth, data, v.length)
+      case _ => new SPMemUnmasked(depth, data, 1)
     }
   }
 }

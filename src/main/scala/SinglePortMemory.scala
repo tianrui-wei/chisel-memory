@@ -22,13 +22,13 @@ class SinglePortMemory(
     dataWidth: Int = 32,
     addrWidth: Int,
     numberOfLines: Int,
-    masked: Boolean
+    maskWidth: Int
 ) extends BlackBox(
       Map(
         "ADDR_WIDTH" -> addrWidth,
         "DATA_WIDTH" -> dataWidth,
         "DEPTH" -> numberOfLines,
-        "MASKED" -> (if (masked) 1 else 0)
+        "MASK_WIDTH" -> maskWidth
       )
     ) {
   override def desiredName: String = "fpv_sp_mem"
@@ -51,7 +51,7 @@ class SinglePortMemory(
     val write_data = Input(UInt(dataWidth.W))
     val read_data = Output(UInt(dataWidth.W))
     val write_mask_u = Input(
-      UInt((dataWidth / 8).W)
+      UInt(maskWidth.W)
     )
   })
 }

@@ -8,17 +8,16 @@ import memory.SinglePortMemory
 import firrtl.options.TargetDirAnnotation
 import chisel3.experimental.AffectsChiselPrefix
 
-class SinglePortMemoryWrapper(depth: Int, width: Int = 32, masked: Boolean = false, elWidth: Int = 8) extends Module with AffectsChiselPrefix {
+class SinglePortMemoryWrapper(depth: Int, width: Int = 32, maskWidth: Int) extends Module with AffectsChiselPrefix {
   require(isPow2(depth))
   val addrLen = log2Ceil(depth)
-  val dataMaskWidth = width / elWidth
 
   val io = IO(new Bundle {
     val readAddr = Input(UInt(addrLen.W))
     val writeAddr = Input(UInt(addrLen.W))
     val readEnable = Input(Bool())
     val writeEnable = Input(Bool())
-    val writeMask = Input(Vec(dataMaskWidth, Bool()))
+    val writeMask = Input(Vec(maskWidth, Bool()))
     val writeData = Input(UInt(width.W))
     val readData = Output(UInt(width.W))
   })
@@ -28,7 +27,7 @@ class SinglePortMemoryWrapper(depth: Int, width: Int = 32, masked: Boolean = fal
         dataWidth = width,
         addrWidth = addrLen,
         numberOfLines = depth,
-        masked = masked
+        maskWidth = maskWidth
       )
     )
 

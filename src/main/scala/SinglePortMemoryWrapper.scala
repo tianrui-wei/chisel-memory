@@ -8,14 +8,10 @@ import memory.SinglePortMemory
 import firrtl.options.TargetDirAnnotation
 import chisel3.experimental.AffectsChiselPrefix
 
-class SinglePortMemoryWrapper(depth: Int, width: Int = 32, masked: Boolean = false) extends Module with AffectsChiselPrefix {
+class SinglePortMemoryWrapper(depth: Int, width: Int = 32, masked: Boolean = false, elWidth: Int = 8) extends Module with AffectsChiselPrefix {
   require(isPow2(depth))
-  require(
-    width % 8 == 0,
-    "if memory is byte addressable, then the adderss width must be a multiple of 8"
-  )
   val addrLen = log2Ceil(depth)
-  val dataMaskWidth = width / 8
+  val dataMaskWidth = width / elWidth
 
   val io = IO(new Bundle {
     val readAddr = Input(UInt(addrLen.W))

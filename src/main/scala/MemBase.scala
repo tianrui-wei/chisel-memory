@@ -3,7 +3,7 @@ package memory
 import chisel3._
 import chisel3.util._
 
-abstract class MemBase[T <: Data](depth: Int, data : T, masked: Boolean) {
+abstract class MemBase[T <: Data](depth: Int, data : T) {
 
   val dataWidth: Int = data.getWidth
 

@@ -7,9 +7,9 @@ import chisel3.experimental.AffectsChiselPrefix
 import memory.SinglePortMemoryWrapper
 import memory.MemBase
 
-class SPMem[T <: Data](depth: Int, data : T, masked: Boolean) extends MemBase[T](depth, data, masked) {
+class SPMem[T <: Data](depth: Int, data : T, masked: Boolean, elWidth: Int = 8) extends MemBase[T](depth, data) {
 
-  val mem = Module(new SinglePortMemoryWrapper(depth, dataWidth, masked))
+  val mem = Module(new SinglePortMemoryWrapper(depth, dataWidth, masked, elWidth))
 
   override def read(addr: UInt, enable: Bool): T = {
     mem.io.readAddr := addr
@@ -18,7 +18,7 @@ class SPMem[T <: Data](depth: Int, data : T, masked: Boolean) extends MemBase[T]
   }
 }
 
-class SPMemMasked[T <: Data](depth: Int, data : T, masked: Boolean) extends SPMem[T](depth, data, masked) {
+class SPMemMasked[T <: Data](depth: Int, data : T, masked: Boolean, elWidth: Int = 8) extends SPMem[T](depth, data, masked) {
 
   override def write(addr: UInt, da: T, writeMask: Vec[Bool], writeEnable: Bool): Unit = {
     mem.io.writeAddr := addr
@@ -29,7 +29,7 @@ class SPMemMasked[T <: Data](depth: Int, data : T, masked: Boolean) extends SPMe
 }
 
 
-class SPMemUnmasked[T <: Data](depth: Int, data : T, masked: Boolean) extends SPMem[T](depth, data, masked) {
+class SPMemUnmasked[T <: Data](depth: Int, data : T, masked: Boolean = false, elWidth: Int = 8) extends SPMem[T](depth, data, masked) {
 
   override def write(addr: UInt, da: T, enable: Bool): Unit = {
     mem.io.writeAddr := addr
@@ -42,8 +42,8 @@ class SPMemUnmasked[T <: Data](depth: Int, data : T, masked: Boolean) extends SP
 object SPMem {
   def apply[T <: Data](depth: Int, data: T): SPMem[T] = {
     data match {
-      case v: Vec[_] =>new SPMemMasked(depth, data, true)
-      case _ => new SPMemUnmasked(depth, data, false)
+      case v: Vec[_] =>new SPMemMasked(depth, data, true, v.length)
+      case _ => new SPMemUnmasked(depth, data, false, 8)
     }
   }
 }

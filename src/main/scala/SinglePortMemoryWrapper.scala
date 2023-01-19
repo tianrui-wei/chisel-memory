@@ -55,11 +55,20 @@ class SRM(depth: Int, width: Int = 32) extends Module with AffectsChiselPrefix {
 }
 
 class SPMTest(depth: Int, width: Int = 32) extends Module with AffectsChiselPrefix {
+  val io = IO(new Bundle{
+      val ret = Output(UInt(5.W))
+      val retVec = Output(Vec(2, UInt(8.W)))
+  })
   val rand5: UInt = GaloisLFSR.maxPeriod(5)
+  val rand8: UInt = GaloisLFSR.maxPeriod(8)
   val rand32: UInt = GaloisLFSR.maxPeriod(32)
   val spm = SPMem(depth, UInt(width.W))
-  val ret = spm.read(rand5, rand5(0) === 1.U)
+  val spmVec = SPMem(depth, Vec(2, UInt(8.W)))
+  io.ret := spm.read(rand5, rand5(0) === 1.U)
+  io.retVec := spmVec.read(rand8, rand8(0) === 1.U)
+  //io.retVec := Seq.fill(2)(0.U(8.W))
   spm.write(rand5, rand32, rand5(0) === 0.U)
+  spmVec.write(rand5, VecInit(Seq.fill(2)(0.U(8.W))), VecInit(Seq.fill(2)(false.B)), rand5(0) === 0.U)
 }
 
 object SinglePortMemoryWrapperElaborate extends App {

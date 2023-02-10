@@ -8,7 +8,7 @@ import memory.SinglePortMemory
 import firrtl.options.TargetDirAnnotation
 import chisel3.experimental.AffectsChiselPrefix
 
-class SinglePortMemoryWrapper(depth: Int, width: Int = 32, maskWidth: Int) extends Module with AffectsChiselPrefix {
+class SinglePortMemoryWrapper(depth: Int, width: Int = 32, maskWidth: Int, formal: Boolean = false) extends Module {
   require(isPow2(depth))
   val addrLen = log2Ceil(depth)
 
@@ -22,6 +22,7 @@ class SinglePortMemoryWrapper(depth: Int, width: Int = 32, maskWidth: Int) exten
     val readData = Output(UInt(width.W))
   })
 
+  if (formal) {
     val bank = Module(
       new SinglePortMemory(
         dataWidth = width,
@@ -31,14 +32,32 @@ class SinglePortMemoryWrapper(depth: Int, width: Int = 32, maskWidth: Int) exten
       )
     )
 
-    bank.io.clk := clock
-    bank.io.rst_n := !(reset.asBool)
-    bank.io.addr_i := Mux(io.writeEnable, io.writeAddr, io.readAddr)
-    bank.io.write_data := io.writeData
-    bank.io.write_enable := io.writeEnable
-    bank.io.read_enable := io.readEnable
-    bank.io.write_mask_u := io.writeMask.asUInt
-    io.readData := bank.io.read_data_o
+        bank.io.clk := clock
+        bank.io.rst_n := !(reset.asBool)
+        bank.io.addr_i := Mux(io.writeEnable, io.writeAddr, io.readAddr)
+        bank.io.write_data := io.writeData
+        bank.io.write_enable := io.writeEnable
+        bank.io.read_enable := io.readEnable
+        bank.io.write_mask_u := io.writeMask.asUInt
+        io.readData := bank.io.read_data_o
+  } else {
+    val el_width = width / maskWidth
+    val readData = WireDefault(0.U(width.W))
+    io.readData := readData
+    if (maskWidth == 1) {
+      val mem_impl = SyncReadMem(depth, UInt(el_width.W))
+      readData := mem_impl.read(io.readAddr, ~io.writeEnable)
+      when(io.writeEnable) {
+        mem_impl.write(io.writeAddr, io.writeData)
+      }
+    } else {
+      val mem_impl = SyncReadMem(depth, Vec(maskWidth, UInt(el_width.W)))
+      readData := mem_impl.read(io.readAddr, ~io.writeEnable).asUInt
+      when(io.writeEnable) {
+        mem_impl.write(io.writeAddr, io.writeData.asTypeOf(Vec(maskWidth, UInt(el_width.W))), io.writeMask)
+      }
+    }
+  }
 }
 
 // this is why blackboxing doesn't work. It will generate two different modules we need to fill

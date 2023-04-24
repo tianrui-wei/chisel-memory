@@ -1,3 +1,11 @@
+/*
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * Copyright (c) 2023, The Regents of the University of California (Regents).
+ * All Rights Reserved. See LICENSE for license details.
+ *
+ */
+
 package memory
 
 import chisel3._
